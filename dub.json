@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"ulaas"
+	],
+	"copyright": "Copyright © 2020, ulaas",
+	"description": "ray tracing with d",
+	"license": "MIT",
+	"name": "dray"
+}
