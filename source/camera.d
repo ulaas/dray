@@ -1,32 +1,48 @@
 module camera;
 
+import std.math;
+
 import ray;
 import vec3;
+import utility;
 
 class Camera
 {
-public:
-    this()
-    {
-        auto aspect_ratio = 16.0 / 9.0;
-        auto viewport_height = 2.0;
-        auto viewport_width = aspect_ratio * viewport_height;
-        auto focal_length = 1.0;
-
-        origin = Point3(0, 0, 0);
-        horizontal = Vec3(viewport_width, 0.0, 0.0);
-        vertical = Vec3(0.0, viewport_height, 0.0);
-        lower_left_corner = origin - horizontal / 2 - vertical / 2 - Vec3(0, 0, focal_length);
-    }
-
-    Ray get_ray(double u, double v)
-    {
-        return Ray(origin, lower_left_corner + horizontal * u + vertical * v - origin);
-    }
-
-private:
     Point3 origin;
     Point3 lower_left_corner;
     Vec3 horizontal;
     Vec3 vertical;
+    Vec3 u, v, w;
+    double lens_radius;
+
+    this(Point3 lookfrom, Point3 lookat, Vec3 vup, double vfov, double aspect_ratio,
+            double aperture, double focus_dist)
+    {
+        auto theta = degrees_to_radians(vfov);
+        auto h = tan(theta / 2);
+        auto viewport_height = 2.0 * h;
+        auto viewport_width = aspect_ratio * viewport_height;
+
+        w = unit_vector(lookfrom - lookat);
+        u = unit_vector(cross(vup, w));
+        v = cross(w, u);
+
+        origin = lookfrom;
+        horizontal = u * focus_dist * viewport_width;
+        vertical = v * focus_dist * viewport_height;
+        lower_left_corner = origin - horizontal / 2 - vertical / 2 - w * focus_dist;
+
+        lens_radius = aperture / 2;
+    }
+
+    Ray get_ray(double s, double t)
+    {
+        Vec3 rd = random_in_unit_disk() * lens_radius;
+        Vec3 offset = u * rd.x() + v * rd.y();
+
+        return Ray(origin + offset, lower_left_corner + horizontal * s + vertical
+                * t - origin - offset);
+
+    }
+
 }

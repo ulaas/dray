@@ -152,6 +152,12 @@ public:
     static Vec3 random(double min, double max) {
         return Vec3(random_double(min,max), random_double(min,max), random_double(min,max));
     }
+
+    bool near_zero() {
+        // Return true if the vector is close to zero in all dimensions.
+        const auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+    }
 }
 
 double dota(Vec3 u, Vec3 v)
@@ -170,6 +176,10 @@ Vec3 unit_vector(Vec3 v)
     return v / v.length();
 }
 
+Vec3 random_unit_vector() {
+    return unit_vector(random_in_unit_sphere());
+}
+
 Vec3 random_in_unit_sphere() {
     while (true) {
         auto p = Vec3.random(-1,1);
@@ -177,6 +187,36 @@ Vec3 random_in_unit_sphere() {
         return p;
     }
 }
+
+Vec3 random_in_hemisphere(ref Vec3 normal) {
+    Vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dota(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
+
+Vec3 random_in_unit_disk() {
+    while (true) {
+        auto p = Vec3(random_double(-1,1), random_double(-1,1), 0);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
+}
+
+Vec3 reflect(Vec3 v, Vec3 n) {
+    double d = 2 * dota(v,n);
+    return v - n * d;
+}
+
+Vec3 refract(Vec3 uv, Vec3 n, double etai_over_etat) {
+    auto cos_theta = fmin(dota(-uv, n), 1.0);
+    Vec3 r_out_perp =  (uv + n * cos_theta) * etai_over_etat;
+    Vec3 r_out_parallel = n * -sqrt(fabs(1.0 - r_out_perp.length_squared()));
+    return r_out_perp + r_out_parallel;
+}
+
+
 
 alias Point3 = Vec3;
 alias Color = Vec3;

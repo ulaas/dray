@@ -2,11 +2,13 @@ module hittable;
 
 import vec3;
 import ray;
+import material;
 
 struct hit_record
 {
     Point3 p = Point3();
     Vec3 normal = Vec3();
+    Material mat_ptr;
     double t;
     bool front_face;
 

@@ -5,26 +5,28 @@ import std.algorithm;
 import vec3;
 import ray;
 import hittable;
+import material;
 
 class Sphere : Hittable
 {
     Point3 center;
     double radius;
+    Material mat_ptr;
 
     this()
     {
     }
 
-    this(Point3 cen, double r)
+    this(Point3 cen, double r, Material m)
     {
-
+        mat_ptr = m;
         center = cen;
         radius = r;
     }
 
-    static Sphere opCall(Point3 cen, double r)
+    static Sphere opCall(Point3 cen, double r, Material m)
     {
-        return new Sphere(cen, r);
+        return new Sphere(cen, r, m);
     }
 
     override bool hit(Ray r, double t_min, double t_max, ref hit_record rec)
@@ -53,6 +55,7 @@ class Sphere : Hittable
         rec.p = r.at(rec.t);
         Vec3 outward_normal = (rec.p - center) / radius;
         rec.set_face_normal(r, outward_normal);
+        rec.mat_ptr = mat_ptr;
 
         return true;
     }
