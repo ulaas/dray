@@ -5,5 +5,12 @@
 	"copyright": "Copyright © 2020, ulaas",
 	"description": "ray tracing with d",
 	"license": "MIT",
-	"name": "dray"
+	"name": "dray",
+	"configurations": [
+		{
+			"name": "dray",
+			"targetType": "executable",
+			"platforms": ["windows"]
+		}
+	]
 }

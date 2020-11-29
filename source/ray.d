@@ -6,21 +6,39 @@ import std.conv;
 import vec3;
 import hittable;
 
-class Ray {
-        this() {}
-        this(point3 origin, Vec3 direction)
-        {
-            orig = origin;
-            dir = direction;
-        }
+class Ray
+{
+    Point3 orig;
+    Vec3 dir;
 
-        point3 origin()   { return orig; }
-        Vec3 direction()  { return dir; }
+    this()
+    {
+    }
 
-        point3 at(double t) {
-            return orig + ( dir * t);
-        }
+    this(Point3 origin, Vec3 direction)
+    {
+        orig = origin;
+        dir = direction;
+    }
 
-        point3 orig;
-        Vec3 dir;
+    static Ray opCall(Point3 origin, Vec3 direction)
+    {
+        return new Ray(origin, direction);
+    }
+
+    Point3 origin()
+    {
+        return orig;
+    }
+
+    Vec3 direction()
+    {
+        return dir;
+    }
+
+    Point3 at(double t)
+    {
+        return orig + (dir * t);
+    }
+
 }
