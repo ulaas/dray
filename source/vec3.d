@@ -90,6 +90,19 @@ public:
         assert(0);
     }
 
+    auto opBinaryRight(string op)(double t)
+    {
+        if (op == "*")
+        {
+            return Vec3(t * this.e[0], t * this.e[1], t * this.e[2]);
+        }
+        if (op == "/")
+        {
+            return (1 / t) * this;
+        }
+        assert(0);
+    }
+
     Vec3 opOpAssign(string op)(Vec3 v)
     {
         if (op == "+=")

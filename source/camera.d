@@ -28,7 +28,7 @@ class Camera
         v = cross(w, u);
 
         origin = lookfrom;
-        horizontal = u * focus_dist * viewport_width;
+        horizontal = focus_dist * viewport_width * u;
         vertical = v * focus_dist * viewport_height;
         lower_left_corner = origin - horizontal / 2 - vertical / 2 - w * focus_dist;
 
