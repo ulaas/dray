@@ -38,7 +38,7 @@ Color ray_color(Ray r, Hittable world, int depth)
 
 Hittable_List random_scene()
 {
-    Hittable_List world = new Hittable_List();
+    auto world = Hittable_List();
 
     // World
 
@@ -94,10 +94,10 @@ void main()
 {
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
-    const int image_width = 1200;
+    const int image_width = 300;
     const int image_height = castFrom!double.to!int(image_width / aspect_ratio);
-    const int samples_per_pixel = 500;
-    const int max_depth = 100;
+    const int samples_per_pixel = 100;
+    const int max_depth = 10;
 
     //WORLD
     auto world = random_scene();
@@ -130,10 +130,12 @@ auto R = cos(pi / 4);
     auto dist_to_focus = 10.0;
     auto aperture = 0.1;
 
-    Camera cam = new Camera(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+    auto camera = Camera(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
     //open file
-    File file = File("render.ppm", "w+"); //Render
+    File file = File("render.ppm", "w+"); 
+	
+	//Render
     //write header
     file.writeln(format("%s", "P3"));
     file.writeln(format("%d %d", image_width, image_height));
@@ -152,13 +154,14 @@ auto R = cos(pi / 4);
                 //stderr.writef("RANDOM: %s\n", random_double());
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
-                Ray r = cam.get_ray(u, v); //todo: += operator overload does not work? WHY???????
-                //also mult only works if vec is first argument
+                Ray r = camera.get_ray(u, v); 
+                //todo: += operator overload does not work? WHY???????
+                
                 pixel_color = pixel_color + ray_color(r, world, max_depth);
             }
             write_color(pixel_color, samples_per_pixel, file);
         }
     }
 
-    stderr.writef("\nDONE!!!!\n");
+    stderr.writef("DONE!!!!\n");
 }

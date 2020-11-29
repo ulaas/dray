@@ -16,6 +16,16 @@ class Hittable_List : Hittable
         objects ~= anObject;
     }
 
+    static Hittable_List opCall()
+    {
+        return new Hittable_List();
+    }
+
+    static Hittable_List opCall(Hittable anObject)
+    {
+        return new Hittable_List(anObject);
+    }
+
     void add(Hittable anObject)
     {
         objects ~= anObject;

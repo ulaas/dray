@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "type": "dub",
+            "run": false,
+            "compiler": "ldc2",
+            "archType": "x86_64",
+            "buildType": "debug",
+            "configuration": "dray",
+            "_generated": true,
+            "problemMatcher": [
+                "$dmd"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "dub-auto: Build dray",
+            "detail": "dub build --compiler=ldc2 -a=x86_64 -b=debug -c=dray"
+        }
+    ]
+}

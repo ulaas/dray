@@ -35,6 +35,12 @@ class Camera
         lens_radius = aperture / 2;
     }
 
+    static Camera opCall(Point3 lookfrom, Point3 lookat, Vec3 vup, double vfov, double aspect_ratio,
+            double aperture, double focus_dist)
+    {
+        return new Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist);
+    }
+
     Ray get_ray(double s, double t)
     {
         Vec3 rd = random_in_unit_disk() * lens_radius;

@@ -90,6 +90,7 @@ public:
         assert(0);
     }
 
+    //operator overload for class being on the right side of the equation
     auto opBinaryRight(string op)(double t)
     {
         if (op == "*")
