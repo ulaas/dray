@@ -1,6 +1,8 @@
-public import hittable;
-public import ray;
-public import vec3;
+module hittable_list;
+
+import hittable;
+import ray;
+import vec3;
 
 class Hittable_List : Hittable {
         Hittable[] objects;
@@ -18,7 +20,7 @@ class Hittable_List : Hittable {
             return objects.length;
         }
 
-        override bool hit(Ray r, double t_min, double t_max, hit_record rec)
+        override bool hit(Ray r, double t_min, double t_max, ref hit_record rec)
         {
             auto temp_rec = hit_record();
             bool hit_anything = false;

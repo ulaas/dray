@@ -1,3 +1,5 @@
+module vec3;
+
 import std.stdio;
 import std.format;
 import std.conv;
@@ -147,6 +149,9 @@ Vec3 unit_vector(Vec3 v)
 {
   return v / v.length();
 }
+
+alias point3 = Vec3;
+alias color = Vec3;
 
 
 

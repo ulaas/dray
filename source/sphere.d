@@ -1,12 +1,14 @@
+module sphere;
+
 import std.math;
 import std.algorithm;
-public import vec3;
-public import ray;
-public import hittable;
+import vec3;
+import ray;
+import hittable;
 
 class Sphere : Hittable{
     this() {}
-    this(Vec3 cen, double r) {
+    this(point3 cen, double r) {
         
     center = cen;
     radius = r;
@@ -14,9 +16,9 @@ class Sphere : Hittable{
 
     //static Vec3 opCall() { return new Vec3(); }
 
-    static Sphere opCall(Vec3 cen, double r) { return new Sphere(cen, r); }
+    static Sphere opCall(point3 cen, double r) { return new Sphere(cen, r); }
     
-    override bool hit(Ray r, double t_min, double t_max, hit_record rec)  {
+    override bool hit(Ray r, double t_min, double t_max, ref hit_record rec)  {
 
         Vec3 oc = r.origin() - center;
         auto a = r.direction().length_squared();
@@ -44,7 +46,7 @@ class Sphere : Hittable{
     }
 
     public:
-        Vec3 center;
+        point3 center;
         double radius;
 }
 
