@@ -121,7 +121,8 @@ void main()
     world.add(Sphere(Point3(-1.0, 0.0, -1.0), 0.5, material_left));
     world.add(Sphere(Point3(-1.0, 0.0, -1.0), -0.4, material_left));
     world.add(Sphere(Point3(1.0, 0.0, -1.0), 0.5, material_right));
-*/
+    */
+    
     // Camera
     Point3 lookfrom = Point3(13, 2, 3);
     Point3 lookat = Point3(0, 0, 0);
