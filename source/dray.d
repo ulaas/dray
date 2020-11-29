@@ -16,7 +16,7 @@ import material;
 
 Color ray_color(Ray r, Hittable world, int depth)
 {
-    hit_record rec;
+    Hit_Record rec;
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0)
@@ -41,7 +41,6 @@ Hittable_List random_scene()
     auto world = Hittable_List();
 
     // World
-
     auto ground_material = Lambertian(Color(0.5, 0.5, 0.5));
     world.add(Sphere(Point3(0, -1000, 0), 1000, ground_material));
 
@@ -49,7 +48,7 @@ Hittable_List random_scene()
     {
         for (int b = -11; b < 11; b++)
         {
-            auto choose_mat = random_double();
+            const auto choose_mat = random_double();
 
             Point3 center = Point3(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
 
@@ -94,22 +93,22 @@ void main()
 {
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
-    const int image_width = 300;
+    const int image_width = 100;
     const int image_height = castFrom!double.to!int(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 10;
     const int max_depth = 10;
 
     //WORLD
     auto world = random_scene();
 
     /*  2 spheres
-auto R = cos(pi / 4); 
+    auto R = cos(pi / 4); 
     auto material_left = Lambertian(Color(0, 0, 1));
     auto material_right = Lambertian(Color(1, 0, 0));
 
     world.add(Sphere(Point3(-R, 0, -1), R, material_left));
     world.add(Sphere(Point3(R, 0, -1), R, material_right));
-*/
+    */
 
     /*  5 spheres
     auto material_ground = Lambertian(Color(0.8, 0.8, 0.0));
@@ -133,9 +132,9 @@ auto R = cos(pi / 4);
     auto camera = Camera(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
     //open file
-    File file = File("render.ppm", "w+"); 
-	
-	//Render
+    File file = File("render.ppm", "w+");
+
+    //Render
     //write header
     file.writeln(format("%s", "P3"));
     file.writeln(format("%d %d", image_width, image_height));
@@ -150,13 +149,11 @@ auto R = cos(pi / 4);
             Color pixel_color = Color(0, 0, 0);
             for (int s = 0; s < samples_per_pixel; ++s)
             {
-                //todo: debug assert
-                //stderr.writef("RANDOM: %s\n", random_double());
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
-                Ray r = camera.get_ray(u, v); 
-                //todo: += operator overload does not work? WHY???????
-                
+                Ray r = camera.get_ray(u, v);
+
+                //todo: += operator overload does not work? WHY??????? i have removed it from vec3.d as it was getting awkward.
                 pixel_color = pixel_color + ray_color(r, world, max_depth);
             }
             write_color(pixel_color, samples_per_pixel, file);

@@ -13,7 +13,7 @@ abstract class Material
     {
     }
 
-    bool scatter(ref Ray r_in, ref hit_record rec, ref Color attenuation, ref Ray scattered);
+    bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered);
 }
 
 class Lambertian : Material
@@ -30,7 +30,7 @@ class Lambertian : Material
         return new Lambertian(a);
     }
 
-    override bool scatter(ref Ray r_in, ref hit_record rec, ref Color attenuation, ref Ray scattered)
+    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered)
     {
         auto scatter_direction = rec.normal + random_unit_vector();
 
@@ -53,14 +53,7 @@ class Metal : Material
     this(Color a, double f)
     {
         albedo = a;
-        if (f < 1)
-        {
-            fuzz = f;
-        }
-        else
-        {
-            fuzz = 1;
-        }
+        fuzz = (f < 1) ? f : 1;
     }
 
     static Metal opCall(Color a, double f)
@@ -68,12 +61,12 @@ class Metal : Material
         return new Metal(a, f);
     }
 
-    override bool scatter(ref Ray r_in, ref hit_record rec, ref Color attenuation, ref Ray scattered)
+    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered)
     {
         Vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         scattered = Ray(rec.p, reflected + random_in_unit_sphere() * fuzz);
         attenuation = albedo;
-        return (dota(scattered.direction(), rec.normal) > 0);
+        return (dotp(scattered.direction(), rec.normal) > 0);
     }
 }
 
@@ -91,19 +84,18 @@ class Dielectric : Material
         return new Dielectric(index_of_refraction);
     }
 
-    override bool scatter(ref Ray r_in, ref hit_record rec, ref Color attenuation, ref Ray scattered)
+    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered)
     {
         attenuation = Color(1.0, 1.0, 1.0);
-        double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;
+        const double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;
 
         Vec3 unit_direction = unit_vector(r_in.direction());
 
-        double cos_theta = fmin(dota(-unit_direction, rec.normal), 1.0);
-        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+        const double cos_theta = fmin(dotp(-unit_direction, rec.normal), 1.0);
+        const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
-        bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+        const bool cannot_refract = refraction_ratio * sin_theta > 1.0;
         Vec3 direction;
-        
 
         if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
             direction = reflect(unit_direction, rec.normal);
@@ -111,15 +103,15 @@ class Dielectric : Material
             direction = refract(unit_direction, rec.normal, refraction_ratio);
 
         scattered = Ray(rec.p, direction);
-
         return true;
     }
 
-    static double reflectance(double cosine, double ref_idx) {
-            // Use Schlick's approximation for reflectance.
-            auto r0 = (1-ref_idx) / (1+ref_idx);
-            r0 = r0*r0;
-            return r0 + (1-r0)*pow((1 - cosine),5);
-        }
+    static double reflectance(double cosine, double ref_idx)
+    {
+        // Use Schlick's approximation for reflectance.
+        auto r0 = (1 - ref_idx) / (1 + ref_idx);
+        r0 = r0 * r0;
+        return r0 + (1 - r0) * pow((1 - cosine), 5);
+    }
 
 }

@@ -36,9 +36,9 @@ class Hittable_List : Hittable
         return objects.length;
     }
 
-    override bool hit(Ray r, double t_min, double t_max, ref hit_record rec)
+    override bool hit(Ray r, double t_min, double t_max, ref Hit_Record rec)
     {
-        auto temp_rec = hit_record();
+        auto temp_rec = Hit_Record();
         bool hit_anything = false;
         auto closest_so_far = t_max;
 

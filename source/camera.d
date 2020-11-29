@@ -18,10 +18,10 @@ class Camera
     this(Point3 lookfrom, Point3 lookat, Vec3 vup, double vfov, double aspect_ratio,
             double aperture, double focus_dist)
     {
-        auto theta = degrees_to_radians(vfov);
-        auto h = tan(theta / 2);
-        auto viewport_height = 2.0 * h;
-        auto viewport_width = aspect_ratio * viewport_height;
+        const auto theta = degrees_to_radians(vfov);
+        const auto h = tan(theta / 2);
+        const auto viewport_height = 2.0 * h;
+        const auto viewport_width = aspect_ratio * viewport_height;
 
         w = unit_vector(lookfrom - lookat);
         u = unit_vector(cross(vup, w));
@@ -35,8 +35,8 @@ class Camera
         lens_radius = aperture / 2;
     }
 
-    static Camera opCall(Point3 lookfrom, Point3 lookat, Vec3 vup, double vfov, double aspect_ratio,
-            double aperture, double focus_dist)
+    static Camera opCall(Point3 lookfrom, Point3 lookat, Vec3 vup, double vfov,
+            double aspect_ratio, double aperture, double focus_dist)
     {
         return new Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist);
     }

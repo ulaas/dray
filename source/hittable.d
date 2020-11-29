@@ -4,7 +4,7 @@ import vec3;
 import ray;
 import material;
 
-struct hit_record
+struct Hit_Record
 {
     Point3 p = Point3();
     Vec3 normal = Vec3();
@@ -12,11 +12,9 @@ struct hit_record
     double t;
     bool front_face;
 
-    //static hit_record opCall() { return new hit_record(); }
-
     void set_face_normal(Ray r, Vec3 outward_normal)
     {
-        front_face = dota(r.direction(), outward_normal) < 0;
+        front_face = dotp(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }
 }
@@ -28,5 +26,5 @@ public:
     {
     }
 
-    bool hit(Ray r, double t_min, double t_max, ref hit_record rec);
+    bool hit(Ray r, double t_min, double t_max, ref Hit_Record rec);
 }
