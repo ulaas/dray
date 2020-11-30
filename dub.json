@@ -2,15 +2,20 @@
 	"authors": [
 		"ulaas"
 	],
-	"copyright": "Copyright © 2020, ulaas",
-	"description": "ray tracing with d",
-	"license": "MIT",
-	"name": "dray",
 	"configurations": [
 		{
 			"name": "dray",
-			"targetType": "executable",
-			"platforms": ["windows"]
+			"platforms": [
+				"windows"
+			],
+			"targetType": "executable"
 		}
-	]
+	],
+	"copyright": "Copyright © 2020, ulaas",
+	"dependencies": {
+		"arsd-official:simpledisplay": "~>8.5.4"
+	},
+	"description": "ray tracing with d",
+	"license": "MIT",
+	"name": "dray"
 }

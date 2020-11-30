@@ -13,26 +13,37 @@ const double infinity = double.infinity;
 const double pi = 3.1415926535897932385;
 
 // Utility Functions
-void write_color(Color pixel_color, int samples_per_pixel, File file)
+void write_color(int[4] color, ref File file)
 {
+    //write the pixel data to file
+    file.writeln(format("%s %s %s", color[0], color[1], color[2]));
+    //file.flush();
+}
+
+int[4] get_integers_from_color(Color3 pixel_color, int samples_per_pixel)
+{
+    int[4] result;
+    
     //get x,y,z color from the pixel
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
 
-    // Divide the color by the number of samples and gamma-correct for gamma=2.0.
     auto scale = 1.0 / samples_per_pixel;
     r = sqrt(scale * r);
     g = sqrt(scale * g);
     b = sqrt(scale * b);
 
-    //cast to 8bit per pixel for ppm format
     auto ir = castFrom!double.to!int(256 * clamp(r, 0.0, 0.999));
     auto ig = castFrom!double.to!int(256 * clamp(g, 0.0, 0.999));
     auto ib = castFrom!double.to!int(256 * clamp(b, 0.0, 0.999));
 
-    //write the pixel data to file
-    file.writeln(format("%s %s %s", ir, ig, ib));
+    result[0] = ir;
+    result[1] = ig;
+    result[2] = ib;
+    result[3] = 255;
+
+    return result;
 }
 
 double degrees_to_radians(double degrees)

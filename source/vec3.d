@@ -197,10 +197,10 @@ Vec3 random_in_unit_disk()
     }
 }
 
-Vec3 reflect(Vec3 v, Vec3 n)
+Vec3 reflect(Vec3 u, Vec3 v)
 {
-    const double d = 2 * dotp(v, n);
-    return v - n * d;
+    const double d = 2 * dotp(u, v);
+    return u - v * d;
 }
 
 Vec3 refract(Vec3 uv, Vec3 n, double etai_over_etat)
@@ -212,4 +212,4 @@ Vec3 refract(Vec3 uv, Vec3 n, double etai_over_etat)
 }
 
 alias Point3 = Vec3;
-alias Color = Vec3;
+alias Color3 = Vec3;

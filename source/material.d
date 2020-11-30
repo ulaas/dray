@@ -13,24 +13,24 @@ abstract class Material
     {
     }
 
-    bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered);
+    bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color3 attenuation, ref Ray scattered);
 }
 
 class Lambertian : Material
 {
-    Color albedo;
+    Color3 albedo;
 
-    this(Color a)
+    this(Color3 a)
     {
         albedo = a;
     }
 
-    static Lambertian opCall(Color a)
+    static Lambertian opCall(Color3 a)
     {
         return new Lambertian(a);
     }
 
-    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered)
+    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color3 attenuation, ref Ray scattered)
     {
         auto scatter_direction = rec.normal + random_unit_vector();
 
@@ -47,21 +47,21 @@ class Lambertian : Material
 
 class Metal : Material
 {
-    Color albedo;
+    Color3 albedo;
     double fuzz;
 
-    this(Color a, double f)
+    this(Color3 a, double f)
     {
         albedo = a;
         fuzz = (f < 1) ? f : 1;
     }
 
-    static Metal opCall(Color a, double f)
+    static Metal opCall(Color3 a, double f)
     {
         return new Metal(a, f);
     }
 
-    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered)
+    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color3 attenuation, ref Ray scattered)
     {
         Vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         scattered = Ray(rec.p, reflected + random_in_unit_sphere() * fuzz);
@@ -84,9 +84,9 @@ class Dielectric : Material
         return new Dielectric(index_of_refraction);
     }
 
-    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color attenuation, ref Ray scattered)
+    override bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color3 attenuation, ref Ray scattered)
     {
-        attenuation = Color(1.0, 1.0, 1.0);
+        attenuation = Color3(1.0, 1.0, 1.0);
         const double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;
 
         Vec3 unit_direction = unit_vector(r_in.direction());
