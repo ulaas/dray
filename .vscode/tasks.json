@@ -17,7 +17,7 @@
                 "isDefault": true
             },
             "label": "dub-auto: Build dray",
-            "detail": "dub build --compiler=ldc2 -a=x86_64 -b=debug -c=dray"
+            "detail": "dub build --compiler=dmd -a=x86_64 -b=debug -c=dray"
         }
     ]
 }

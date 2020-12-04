@@ -29,7 +29,7 @@ class Sphere : Hittable
         return new Sphere(cen, r, m);
     }
 
-    override bool hit(Ray r, double t_min, double t_max, ref Hit_Record rec)
+    override bool hit(Ray r, double t_min, double t_max, Hit_Record rec)
     {
 
         Vec3 oc = r.origin() - center;

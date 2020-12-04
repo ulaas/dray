@@ -26,5 +26,5 @@ public:
     {
     }
 
-    bool hit(Ray r, double t_min, double t_max, ref Hit_Record rec);
+    bool hit(Ray r, double t_min, double t_max, Hit_Record rec);
 }
