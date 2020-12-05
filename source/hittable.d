@@ -4,8 +4,16 @@ import vec3;
 import ray;
 import material;
 
-struct Hit_Record
+class Hit_Record
 {
+    this()
+    {}
+
+    static Hit_Record opCall()
+    {
+        return new Hit_Record();
+    }
+
     Point3 p = Point3();
     Vec3 normal = Vec3();
     Material mat_ptr;
@@ -26,5 +34,5 @@ public:
     {
     }
 
-    bool hit(Ray r, double t_min, double t_max, Hit_Record rec);
+    bool hit(Ray r, double t_min, double t_max, ref Hit_Record rec);
 }

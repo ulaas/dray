@@ -9,9 +9,6 @@ import vec3;
 
 abstract class Material
 {
-    this()
-    {
-    }
 
     bool scatter(ref Ray r_in, ref Hit_Record rec, ref Color3 attenuation, ref Ray scattered);
 }

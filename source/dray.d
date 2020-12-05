@@ -30,11 +30,11 @@ import simpledisplay;
 
 bool worker_threads_started = false;
 const auto aspect_ratio = 16.0 / 9.0;
-const int image_width = 300;
+const int image_width = 1200;
 const int image_height = castFrom!double.to!int(image_width / aspect_ratio);
-const int samples_per_pixel = 10;
-const int max_depth = 5;
-const int render_thread_count = 10;
+const int samples_per_pixel = 5;
+const int max_depth = 10;
+const int render_thread_count = 12;
 const int pixels_per_work_order = 50;
 
 void main()

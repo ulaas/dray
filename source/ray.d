@@ -9,6 +9,7 @@ import std.math;
 import vec3;
 import hittable;
 import utility;
+import hittable_list;
 
 class Ray
 {
@@ -47,9 +48,9 @@ class Ray
 
 }
 
-Color3 ray_color(Ray r, Hittable world, int depth)
+Color3 ray_color(Ray r, Hittable_List world, int depth)
 {
-    Hit_Record rec;
+    Hit_Record rec = Hit_Record();
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0)
@@ -57,8 +58,8 @@ Color3 ray_color(Ray r, Hittable world, int depth)
 
     if (world.hit(r, 0.001, infinity, rec))
     {
-        Ray scattered;
-        Color3 attenuation;
+        Ray scattered = new Ray();
+        Color3 attenuation = new Color3();
         if (rec.mat_ptr.scatter(r, rec, attenuation, scattered))
             return attenuation * ray_color(scattered, world, depth - 1);
         return Color3(0, 0, 0);
