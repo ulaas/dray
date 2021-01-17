@@ -6,3 +6,9 @@ dray.sln
 *.jpg
 
 
+
+.vscode/launch.json
+
+.vscode/settings.json
+
+libdray.a

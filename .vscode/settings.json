@@ -1,7 +1,0 @@
-{
-    "dscanner.ignoredKeys": [
-        "dscanner.style.undocumented_declaration",
-        "dscanner.style.phobos_naming_convention",
-        "dscanner.style.long_line"
-    ]
-}
