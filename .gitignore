@@ -12,3 +12,5 @@ dray.sln
 .vscode/settings.json
 
 libdray.a
+
+dray
