@@ -14,6 +14,7 @@ import std.container;
 import std.range;
 import std.typecons;
 import std.typetuple;
+import std.getopt;
 
 import utility;
 import vec3;
@@ -29,16 +30,37 @@ import raythreading;
 import simpledisplay;
 
 bool worker_threads_started = false;
-const auto aspect_ratio = 16.0 / 9.0;
-const int image_width = 1200;
-const int image_height = castFrom!double.to!int(image_width / aspect_ratio);
-const int samples_per_pixel = 5;
-const int max_depth = 10;
-const int render_thread_count = 12;
-const int pixels_per_work_order = 50;
+double aspect_ratio = 1.7777;
+int image_width = 200;
+int image_height = 200; //
+int samples_per_pixel = 5;
+int max_depth = 10;
+int render_thread_count = 4;
+int pixels_per_work_order = 50;
+bool dummyrender = false;
 
-void main()
+void main(string[] args)
 {
+    auto helpInformation = getopt(args, "width", &image_width, "aspect",
+            &aspect_ratio, "threads", &render_thread_count,
+            "samples", &samples_per_pixel, "maxdepth", &max_depth, "pixelbundlecount",
+            &pixels_per_work_order, "dummyrender", &dummyrender); // enum
+
+    if (helpInformation.helpWanted)
+    {
+        defaultGetoptPrinter("Some information about the program.", helpInformation.options);
+    }
+
+    writeln(dummyrender);
+
+    const MonoTime render_start_time = MonoTime.currTime;
+
+    image_height = castFrom!double.to!int(image_width / aspect_ratio);
+    int total_pixels_to_render = image_width * image_height;
+    bool render_finished = false;
+    bool closed = false;
+
+    log_debug_message(format("Total pixels to render %s", total_pixels_to_render), DEBUG_LOG_TYPE.GENERIC);
 
     auto window = new SimpleWindow(image_width, image_height, "d-ray",
             OpenGlOptions.no, Resizability.fixedSize, WindowTypes.normal, WindowFlags.normal);
@@ -79,6 +101,7 @@ void main()
     shared(int)[] position_y = new shared(int)[pixels_per_work_order];
 
     int cc = 0;
+    int bundle_no = 0;
     for (int y = 0; y < image_height; y++)
     {
         for (int x = 0; x < image_width; x++)
@@ -92,8 +115,9 @@ void main()
 
             if (cc == pixels_per_work_order)
             {
-                send(rmanager.GetNextWorker(), RenderOrderMessage(image_width, image_height,
-                        samples_per_pixel, aspect_ratio, max_depth, position_x, position_y));
+                bundle_no++;
+                send(rmanager.GetNextWorker(), RenderOrderMessage(image_width, image_height, samples_per_pixel,
+                        aspect_ratio, max_depth, position_x, position_y, dummyrender, bundle_no));
                 position_x = new shared(int)[pixels_per_work_order];
                 position_y = new shared(int)[pixels_per_work_order];
                 cc = 0;
@@ -101,70 +125,107 @@ void main()
         }
     }
 
+    log_debug_message(format("All bundles sent waiting for draw calls and/or end of rendering"),
+            DEBUG_LOG_TYPE.GENERIC);
+
     void draw_line()
     {
-        //bool cancelled = false;
-        bool received = false;
-        received = receiveTimeout(dur!("msecs")(5), (RenderResultMessage msg) {
 
-            int bundlesize = cast(int) msg.position_y.length;
-            log_debug_message(format("PixelRenderResultMessage received: has a bundle of %s pixels",
-                bundlesize), DEBUG_LOG_TYPE.GENERIC);
+        if (!render_finished)
+        {
+            bool received = false;
+            received = receiveTimeout(dur!("msecs")(10), (RenderResultMessage msg) {
 
-            for (int render_cursor = 0; render_cursor < bundlesize; render_cursor++)
+                int bundlesize = cast(int) msg.position_y.length;
+                log_debug_message(format("PixelRenderResultMessage received: has a bundle of %s pixels",
+                    bundlesize), DEBUG_LOG_TYPE.WORKER);
+                total_pixels_to_render -= bundlesize;
+
+                if (total_pixels_to_render > 0)
+                {
+                    for (int render_cursor = 0; render_cursor < bundlesize; render_cursor++)
+                    {
+                        auto painter = window.draw();
+
+                        int a = cast(int) msg.pixel_r[render_cursor];
+                        int b = cast(int) msg.pixel_g[render_cursor];
+                        int c = cast(int) msg.pixel_b[render_cursor];
+
+                        int x = cast(int) msg.position_x[render_cursor];
+                        int y = cast(int) msg.position_y[render_cursor];
+
+                        painter.outlineColor = Color(a, b, c, a);
+                        //Draw pixel to window 
+                        painter.drawPixel(Point(x, image_height - y));
+
+                    }
+                }
+                else
+                {
+                    //rendering shall be finished by now. lets send cancel messages to workers and wait for their acks
+                    //before shutting dowmn gracefully
+                    log_debug_message("Rendering finished", DEBUG_LOG_TYPE.GENERIC);
+                    render_finished = true;
+                }
+
+            });
+
+            if (!received)
             {
-                auto painter = window.draw();
+                log_debug_message(format("no render result. idling around"), DEBUG_LOG_TYPE.WORKER);
+            }
+        }
+    }
 
-                int a = cast(int) msg.pixel_r[render_cursor];
-                int b = cast(int) msg.pixel_g[render_cursor];
-                int c = cast(int) msg.pixel_b[render_cursor];
-
-                int x = cast(int) msg.position_x[render_cursor];
-                int y = cast(int) msg.position_y[render_cursor];
-
-                painter.outlineColor = Color(a, b, c, a);
-                //Draw pixel to window   
-                painter.drawPixel(Point(x, image_height-y));
+    void close()
+    {
+        if (render_finished && !closed)
+        {
+            foreach (aWorker; rmanager.GetWorkerList())
+            {
+                log_debug_message(format("Sending cancel message for worker %s",
+                        aWorker.GetId()), DEBUG_LOG_TYPE.GENERIC);
+                send(aWorker.GetWorkerTid(), CanceRenderMessage());
             }
 
-        }, (CancelRenderAckMessage msg) {
-            // we are ready lets send back ack
-            //send(parentId, WorkerReadyACKMessage(myid));
-        });
-        
+            closed = true;
+            // And we wait until all threads have
+            // acknowledged their CANCEL/STOP STATUS
+            foreach (ref tid; rmanager.threads)
+            {
+                receiveOnly!(CancelRenderAckMessage);
+                log_debug_message("Received CANCEL-ACK from all workers. Shutting down",
+                        DEBUG_LOG_TYPE.GENERIC);
+            }
 
-        if (!received)
-        {
-            log_debug_message(format("no render result. idling around"), DEBUG_LOG_TYPE.WORKER);
+            const MonoTime render_stop_time = MonoTime.currTime;
+            const Duration timeElapsed = render_stop_time - render_start_time;
+            auto seconds = timeElapsed.total!"seconds";
+
+            log_debug_message(format("Render took %s seconds to complete.",
+                    seconds), DEBUG_LOG_TYPE.GENERIC);
+
+            window.close();
         }
 
-        //Thread.sleep(dur!("msecs")(1));
     }
 
-    void dummy()
-    {
-
-    }
-
-    window.eventLoop(10, () { draw_line(); }, delegate(KeyEvent event) {
-        dummy();
-    }, delegate(MouseEvent event) { dummy(); }, delegate(dchar ch) { dummy(); });
-
+    window.eventLoop(5, () { draw_line(); close(); });
 }
 
 void render_worker(Tid parentId, string myid)
 {
     bool cancelled = false;
     log_debug_message(format("Starting WORKER %s ...", myid), DEBUG_LOG_TYPE.GENERIC);
-
+    int bundles_received = 0;
     while (!cancelled)
     {
         bool received = false;
-        received = receiveTimeout(dur!("msecs")(100), (RenderOrderMessage msg) {
+        received = receiveTimeout(dur!("msecs")(5), (RenderOrderMessage msg) {
             log_debug_message(format("Worker %s ----   received: %s pixels to render. rendering now.",
-                myid, msg.position_x.length), DEBUG_LOG_TYPE.GENERIC);
+                myid, msg.position_x.length), DEBUG_LOG_TYPE.WORKER);
             //new render code.
-
+            bundles_received++;
             const int size = to!int(msg.position_x.length);
 
             shared int[] array_color_r = new shared(int)[size];
@@ -176,9 +237,18 @@ void render_worker(Tid parentId, string myid)
 
             for (int render_cursor = 0; render_cursor < size; render_cursor++)
             {
-                Color3 line_color = renderpixel(msg.render_width, msg.render_height,
-                    msg.position_x[render_cursor], msg.position_y[render_cursor],
-                    msg.spp, msg.aspect, msg.max_depth);
+                Color3 line_color;
+                if (msg.dummy_render)
+                {
+                    line_color = rdummy(msg.render_width, msg.render_height, msg.position_x[render_cursor],
+                        msg.position_y[render_cursor], msg.spp, msg.aspect, msg.max_depth);
+                }
+                else
+                {
+                    line_color = renderpixel(msg.render_width, msg.render_height,
+                        msg.position_x[render_cursor], msg.position_y[render_cursor],
+                        msg.spp, msg.aspect, msg.max_depth);
+                }
 
                 auto scale = 1.0 / msg.spp;
                 auto r = sqrt(scale * line_color.x());
@@ -202,13 +272,18 @@ void render_worker(Tid parentId, string myid)
             send(parentId, RenderResultMessage(array_color_r, array_color_g,
                 array_color_b, array_color_a, array_pos_x, array_pos_y));
 
+                log_debug_message(format("Worker %s ----   received: bundle no %s",
+                myid, msg.bundle_no), DEBUG_LOG_TYPE.WORKER);
+
         }, (IsWorkerReadyMessage msg) {
             // we are ready lets send back ack
             send(parentId, WorkerReadyACKMessage(myid));
-        },(CanceRenderMessage msg) {
+        }, (CanceRenderMessage msg) {
             // we are cancelling lets send back ack
+            log_debug_message(format("TID: %s received cancel/stop. shutting down.",
+                myid), DEBUG_LOG_TYPE.GENERIC);
+            send(parentId, CancelRenderAckMessage());
             cancelled = true;
-            //send(parentId, WorkerReadyACKMessage(myid));
         });
 
         if (!received)
@@ -237,7 +312,13 @@ Color3 renderpixel(int image_w, int image_h, int pixel_x, int pixel_y, int spp,
         pixel_color = pixel_color + ray_color(r, world, max_depth);
     }
 
-    //destroy(world);
-    //destroy(cam);
     return pixel_color;
+}
+
+Color3 rdummy(int image_w, int image_h, int pixel_x, int pixel_y, int spp,
+        double aspect, int max_depth)
+{
+
+    Color3 color = Color3(random_double(), random_double(), random_double());
+    return color;
 }

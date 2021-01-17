@@ -30,13 +30,17 @@ struct RenderOrderMessage
     shared(int) max_depth;
     shared(int)[] position_x;
     shared(int)[] position_y;
+    shared(bool) dummy_render;
+    shared(int) bundle_no;
 
     this(shared(int) render_w, shared(int) render_h, 
                                 shared(int) sample_per_pixel, 
                                 shared(double) asp_r, 
                                 shared(int) max_d, 
                                 shared(int)[] pos_x,
-                                shared(int)[] pos_y
+                                shared(int)[] pos_y,
+                                shared(bool) drender,
+                                shared(int) b_no
                                 )
     {
         this.render_width = render_w;
@@ -46,6 +50,8 @@ struct RenderOrderMessage
         this.max_depth = max_d;
         this.position_x = pos_x;
         this.position_y = pos_y;
+        this.dummy_render = drender;
+        this.bundle_no = b_no;
     }
 }
 
