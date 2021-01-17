@@ -6,14 +6,14 @@
 		{
 			"name": "dray",
 			"platforms": [
-				"windows"
+				"windows", "linux"
 			],
 			"targetType": "executable"
 		}
 	],
 	"copyright": "Copyright © 2020, ulaas",
 	"dependencies": {
-		"arsd-official:simpledisplay": "~>8.5.4"
+		"arsd-official:simpledisplay": "~>9.0.4"
 	},
 	"description": "ray tracing with d",
 	"license": "MIT",

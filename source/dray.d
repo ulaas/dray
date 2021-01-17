@@ -41,7 +41,7 @@ void main()
 {
 
     auto window = new SimpleWindow(image_width, image_height, "d-ray",
-            OpenGlOptions.yes, Resizability.fixedSize, WindowTypes.normal, WindowFlags.normal);
+            OpenGlOptions.no, Resizability.fixedSize, WindowTypes.normal, WindowFlags.normal);
 
     //the manager for render workers
     auto rmanager = RaytraceWorkerManager();
